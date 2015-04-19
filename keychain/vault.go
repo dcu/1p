@@ -2,6 +2,10 @@ package keychain
 
 import ()
 
+var (
+	DefaultSecurityLevel = "SL5"
+)
+
 type Vault struct {
 	Path           string
 	EncryptionKeys *EncryptionKeys
@@ -27,6 +31,26 @@ func (vault *Vault) FindById(uuid string) *Entry {
 		if entry.UUID == uuid {
 			return entry
 		}
+	}
+
+	return nil
+}
+
+func (vault *Vault) FindEncryptionKeyBySecurityLevel(securityLevel string) *EncryptionKey {
+	for _, ekey := range vault.EncryptionKeys.List {
+		if ekey.Level == "SL5" {
+			return ekey
+		}
+	}
+
+	return nil
+}
+
+func (vault *Vault) UnlockEncryptionKey(password string) *EncryptionKey {
+	encryptionKey := vault.FindEncryptionKeyBySecurityLevel(DefaultSecurityLevel)
+
+	if encryptionKey.Unlock(password) {
+		return encryptionKey
 	}
 
 	return nil

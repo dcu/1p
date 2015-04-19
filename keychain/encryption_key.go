@@ -4,12 +4,11 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"golang.org/x/crypto/pbkdf2"
-	"log"
 )
 
 var (
 	MIN_ITERATIONS = 1000
-	KEY_LENGTH     = 32
+	KEY_SIZE       = 16
 )
 
 type EncryptionKey struct {
@@ -24,16 +23,20 @@ type EncryptionKey struct {
 
 func (encryptionKey *EncryptionKey) Unlock(password string) bool {
 	salt, encryptedKey := ParseSaltAndEncryptedDataFromBase64(encryptionKey.Data)
-	log.Printf("Encrypted key: %#v", encryptedKey)
-
 	derivedKey, iv := encryptionKey.pbkdf2([]byte(password), salt)
-	log.Printf("Derived key: %#v", derivedKey)
 
 	encryptionKey.decryptedKey = AES128_Decrypt(derivedKey, iv, encryptedKey)
 
-	log.Printf("Decrypted key: %#v", encryptionKey.decryptedKey)
+	if encryptionKey.validateDecryptedKey() {
+		return true
+	}
 
-	return encryptionKey.validateDecryptedKey()
+	encryptionKey.Lock()
+	return false
+}
+
+func (encryptionKey *EncryptionKey) Lock() {
+	encryptionKey.decryptedKey = nil
 }
 
 func (encryptionKey *EncryptionKey) Decrypt(b64data string) []byte {
@@ -49,10 +52,7 @@ func (encryptionKey *EncryptionKey) validateDecryptedKey() bool {
 	}
 
 	decryptedValidation := encryptionKey.Decrypt(encryptionKey.Validation)
-	log.Printf("Validation: %#v\n", decryptedValidation)
 
-	println(hex.EncodeToString(decryptedValidation))
-	println(hex.EncodeToString(encryptionKey.decryptedKey))
 	if hex.EncodeToString(decryptedValidation) == hex.EncodeToString(encryptionKey.decryptedKey) {
 		return true
 	}
@@ -60,8 +60,16 @@ func (encryptionKey *EncryptionKey) validateDecryptedKey() bool {
 	return false
 }
 
-func (encryptionKey *EncryptionKey) pbkdf2(password []byte, salt []byte) (key []byte, iv []byte) {
-	keyAndIV := pbkdf2.Key(password, salt, encryptionKey.Iterations, KEY_LENGTH, sha1.New)
+func (encryptionKey *EncryptionKey) isUnlocked() bool {
+	if len(encryptionKey.decryptedKey) > 0 {
+		return true
+	}
 
-	return keyAndIV[:KEY_LENGTH/2], keyAndIV[KEY_LENGTH/2:]
+	return false
+}
+
+func (encryptionKey *EncryptionKey) pbkdf2(password []byte, salt []byte) (key []byte, iv []byte) {
+	keyAndIV := pbkdf2.Key(password, salt, encryptionKey.Iterations, KEY_SIZE*2, sha1.New)
+
+	return keyAndIV[:KEY_SIZE], keyAndIV[KEY_SIZE:]
 }

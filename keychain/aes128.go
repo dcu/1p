@@ -16,7 +16,7 @@ func AES128_Decrypt(key []byte, iv []byte, encryptedData []byte) []byte {
 	decryptedData := make([]byte, len(encryptedData))
 	aes.CryptBlocks(decryptedData, encryptedData)
 
-	return unpad(decryptedData, aes.BlockSize())
+	return OpensslUnpadding(decryptedData, aes.BlockSize())
 }
 
 func AES128_DecryptFromBase64(key []byte, iv []byte, encryptedDataB64 string) []byte {
@@ -32,7 +32,7 @@ func AES128_Encrypt(key []byte, iv []byte, data []byte) []byte {
 	}
 	aes := cipher.NewCBCEncrypter(block, iv)
 
-	data = opensslPadding(data, aes.BlockSize())
+	data = OpensslPadding(data, aes.BlockSize())
 
 	encryptedData := make([]byte, len(data))
 	aes.CryptBlocks(encryptedData, data)
@@ -44,54 +44,4 @@ func AES128_EncryptToBase64(key []byte, iv []byte, data []byte) string {
 	encryptedData := AES128_Encrypt(key, iv, data)
 
 	return base64.StdEncoding.EncodeToString(encryptedData)
-}
-
-func opensslPadding(src []byte, blockSize int) []byte {
-	padding := blockSize - (len(src) % blockSize)
-	if padding == 0 {
-		padding = blockSize
-	}
-	src = append(src, byte(0xa))
-	for i := 1; i < padding; i++ {
-		src = append(src, byte(padding-1))
-	}
-	return src
-}
-
-func opensslUnpadding(src []byte, blockSize int) []byte {
-	if len(src) == 0 {
-		return nil
-	}
-
-	padding := src[len(src)-1]
-	if int(padding) > len(src) || int(padding) > blockSize {
-		return nil
-	} else if padding == 0 {
-		return nil
-	}
-
-	for i := len(src) - 1; i > len(src)-int(padding)-1; i-- {
-		if src[i] != padding {
-			return nil
-		}
-	}
-	return src[:len(src)-int(padding)-1]
-}
-
-// Pad applies the PKCS #7 padding scheme on the buffer.
-func pad(in []byte, blockSize int) []byte {
-	padding := blockSize - (len(in) % blockSize)
-	if padding == 0 {
-		padding = blockSize
-	}
-	for i := 0; i < padding; i++ {
-		in = append(in, byte(padding))
-	}
-	return in
-}
-
-func unpad(in []byte, blockSize int) []byte {
-	padding := in[len(in)-1]
-
-	return in[:padding]
 }
