@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"golang.org/x/crypto/pbkdf2"
+	"log"
 )
 
 var (
@@ -21,12 +22,18 @@ type EncryptionKey struct {
 	decryptedKey []byte
 }
 
-func (encryptionKey *EncryptionKey) Unlock(password string) {
+func (encryptionKey *EncryptionKey) Unlock(password string) bool {
 	salt, encryptedKey := ParseSaltAndEncryptedDataFromBase64(encryptionKey.Data)
-	derivedKey, iv := encryptionKey.pbkdf2(salt, []byte(password))
+	log.Printf("Encrypted key: %#v", encryptedKey)
+
+	derivedKey, iv := encryptionKey.pbkdf2([]byte(password), salt)
+	log.Printf("Derived key: %#v", derivedKey)
 
 	encryptionKey.decryptedKey = AES128_Decrypt(derivedKey, iv, encryptedKey)
-	encryptionKey.validateDecryptedKey()
+
+	log.Printf("Decrypted key: %#v", encryptionKey.decryptedKey)
+
+	return encryptionKey.validateDecryptedKey()
 }
 
 func (encryptionKey *EncryptionKey) Decrypt(b64data string) []byte {
@@ -36,18 +43,25 @@ func (encryptionKey *EncryptionKey) Decrypt(b64data string) []byte {
 	return AES128_Decrypt(derivedKey, iv, encryptedKey)
 }
 
-func (encryptionKey *EncryptionKey) validateDecryptedKey() {
+func (encryptionKey *EncryptionKey) validateDecryptedKey() bool {
+	if len(encryptionKey.decryptedKey) == 0 {
+		return false
+	}
+
 	decryptedValidation := encryptionKey.Decrypt(encryptionKey.Validation)
+	log.Printf("Validation: %#v\n", decryptedValidation)
 
 	println(hex.EncodeToString(decryptedValidation))
 	println(hex.EncodeToString(encryptionKey.decryptedKey))
-	if hex.EncodeToString(decryptedValidation) != hex.EncodeToString(encryptionKey.decryptedKey) {
-		panic("Key was invalid!")
+	if hex.EncodeToString(decryptedValidation) == hex.EncodeToString(encryptionKey.decryptedKey) {
+		return true
 	}
+
+	return false
 }
 
-func (encryptionKey *EncryptionKey) pbkdf2(password []byte, salt []byte) ([]byte, []byte) {
+func (encryptionKey *EncryptionKey) pbkdf2(password []byte, salt []byte) (key []byte, iv []byte) {
 	keyAndIV := pbkdf2.Key(password, salt, encryptionKey.Iterations, KEY_LENGTH, sha1.New)
 
-	return keyAndIV[0 : KEY_LENGTH/2], keyAndIV[KEY_LENGTH/2:]
+	return keyAndIV[:KEY_LENGTH/2], keyAndIV[KEY_LENGTH/2:]
 }

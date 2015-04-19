@@ -29,6 +29,7 @@ func ParseSaltAndEncryptedDataFromBase64(b64data string) (salt []byte, encrypted
 		salt = decodedData[SALT_PREFIX_LENGHT:skip]
 		encryptedData = decodedData[skip:]
 	} else {
+		panic("hmmm")
 		salt = make([]byte, 0)
 		encryptedData = decodedData
 	}

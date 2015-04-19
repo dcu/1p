@@ -16,7 +16,7 @@ func AES128_Decrypt(key []byte, iv []byte, encryptedData []byte) []byte {
 	decryptedData := make([]byte, len(encryptedData))
 	aes.CryptBlocks(decryptedData, encryptedData)
 
-	return opensslUnpadding(decryptedData, aes.BlockSize())
+	return unpad(decryptedData, aes.BlockSize())
 }
 
 func AES128_DecryptFromBase64(key []byte, iv []byte, encryptedDataB64 string) []byte {
@@ -76,4 +76,22 @@ func opensslUnpadding(src []byte, blockSize int) []byte {
 		}
 	}
 	return src[:len(src)-int(padding)-1]
+}
+
+// Pad applies the PKCS #7 padding scheme on the buffer.
+func pad(in []byte, blockSize int) []byte {
+	padding := blockSize - (len(in) % blockSize)
+	if padding == 0 {
+		padding = blockSize
+	}
+	for i := 0; i < padding; i++ {
+		in = append(in, byte(padding))
+	}
+	return in
+}
+
+func unpad(in []byte, blockSize int) []byte {
+	padding := in[len(in)-1]
+
+	return in[:padding]
 }
