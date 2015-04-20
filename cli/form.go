@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/howeyc/gopass"
+	//"github.com/mgutz/ansi"
 	"os"
 	"strings"
 )

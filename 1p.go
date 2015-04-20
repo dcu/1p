@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/dcu/1p/cli"
+	"github.com/mgutz/ansi"
 	"os"
 )
 
@@ -13,7 +14,7 @@ func main() {
 	}
 	command := cli.FindCommand(commandName)
 
-	if !command.Prepare(os.Args[2:]) {
+	if !command.Prepare(os.Args) {
 		return
 	}
 
@@ -25,7 +26,7 @@ func main() {
 	}
 
 	for _, vault := range vaults {
-		fmt.Printf("Using %s\n", vault.Path)
+		fmt.Printf("Using %s\n", ansi.Color(vault.Path, "green+h:black"))
 		command.Run(vault)
 	}
 }
