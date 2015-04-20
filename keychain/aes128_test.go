@@ -3,6 +3,7 @@ package keychain
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"strings"
 	"testing"
 )
 
@@ -40,7 +41,7 @@ func Test_AES128_Decrypt(t *testing.T) {
 
 		decryptedData := AES128_DecryptFromBase64(key, iv, expectation["encrypted"])
 
-		if string(decryptedData) != expectation["plain"] {
+		if strings.TrimSuffix(string(decryptedData), "\n") != expectation["plain"] {
 			t.Errorf("Error decrypting data -> `%s` Expected: `%#v` Obtained: `%#v`", expectation["encrypted"], expectation["plain"], string(decryptedData))
 		}
 	}

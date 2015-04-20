@@ -26,16 +26,6 @@ func (vault *Vault) load() {
 	vault.Contents = NewContents(vault)
 }
 
-func (vault *Vault) FindById(uuid string) *Entry {
-	for _, entry := range vault.Contents.Entries {
-		if entry.UUID == uuid {
-			return entry
-		}
-	}
-
-	return nil
-}
-
 func (vault *Vault) FindEncryptionKeyBySecurityLevel(securityLevel string) *EncryptionKey {
 	for _, ekey := range vault.EncryptionKeys.List {
 		if ekey.Level == "SL5" {

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 )
 
 type Contents struct {
 	Vault   *Vault
-	Entries []*Entry
+	Entries []*Item
 }
 
 func NewContents(vault *Vault) *Contents {
@@ -16,6 +17,34 @@ func NewContents(vault *Vault) *Contents {
 	contents.load()
 
 	return contents
+}
+
+func (contents *Contents) FindItemById(uuid string) *Item {
+	for _, item := range contents.Entries {
+		if item.UUID == uuid {
+			return item
+		}
+	}
+
+	return nil
+}
+
+func (contents *Contents) FindAllItemsByPattern(pattern string) []*Item {
+	items := []*Item{}
+	for _, item := range contents.Entries {
+		patternLC := strings.ToLower(pattern)
+		itemNameLC := strings.ToLower(item.Name)
+
+		if strings.Contains(strings.ToLower(itemNameLC), patternLC) {
+			items = append(items, item)
+		}
+
+		if len(items) >= 10 {
+			break
+		}
+	}
+
+	return items
 }
 
 func (contents *Contents) load() {
@@ -33,8 +62,8 @@ func (contents *Contents) load() {
 	}
 
 	for _, values := range jsonContent {
-		entry := NewEntry(contents.Vault, values)
-		contents.Entries = append(contents.Entries, entry)
+		item := NewItem(contents.Vault, values)
+		contents.Entries = append(contents.Entries, item)
 	}
 }
 

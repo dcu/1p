@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-type Entry struct {
+type Item struct {
 	Vault     *Vault
 	UUID      string
 	Type      string
@@ -15,7 +15,7 @@ type Entry struct {
 	CreatedAt float64
 }
 
-type EntryDetails struct {
+type ItemDetails struct {
 	UUID          string `json:"uuid"`
 	UpdatedAt     int64  `json:"updatedAt"`
 	SecurityLevel string `json:"securityLevel"`
@@ -27,36 +27,36 @@ type EntryDetails struct {
 	TypeName      string `json:"typeName"`
 }
 
-func NewEntry(vault *Vault, values []interface{}) *Entry {
-	entry := &Entry{Vault: vault}
+func NewItem(vault *Vault, values []interface{}) *Item {
+	item := &Item{Vault: vault}
 
-	entry.UUID = values[0].(string)
-	entry.Type = values[1].(string)
-	entry.Name = values[2].(string)
-	entry.Url = values[3].(string)
-	entry.CreatedAt = values[4].(float64)
+	item.UUID = values[0].(string)
+	item.Type = values[1].(string)
+	item.Name = values[2].(string)
+	item.Url = values[3].(string)
+	item.CreatedAt = values[4].(float64)
 
-	return entry
+	return item
 }
 
-func (entry *Entry) Details() *EntryDetails {
-	entryDetails := &EntryDetails{}
+func (item *Item) Details() *ItemDetails {
+	itemDetails := &ItemDetails{}
 
-	path := entry.detailsPath()
+	path := item.detailsPath()
 	data, err := ioutil.ReadFile(path)
 
 	if err != nil {
 		panic(err)
 	}
 
-	err = json.Unmarshal(data, &entryDetails)
+	err = json.Unmarshal(data, &itemDetails)
 	if err != nil {
 		panic(err)
 	}
 
-	return entryDetails
+	return itemDetails
 }
 
-func (entry *Entry) detailsPath() string {
-	return filepath.Join(entry.Vault.Path, "data/default", entry.UUID+".1password")
+func (item *Item) detailsPath() string {
+	return filepath.Join(item.Vault.Path, "data/default", item.UUID+".1password")
 }
