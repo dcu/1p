@@ -32,7 +32,14 @@ func (command *CopyCommand) Run(vault *keychain.Vault) {
 		item = askItemToUser(items)
 	}
 
-	fmt.Println(item.Name)
+	key := vault.FindEncryptionKey()
+
+	if !key.IsUnlocked() {
+		fmt.Println("Key is not unlocked.")
+		return
+	}
+
+	fmt.Println(item.Password())
 }
 
 func askItemToUser(items []*keychain.Item) *keychain.Item {

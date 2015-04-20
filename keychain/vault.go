@@ -26,9 +26,13 @@ func (vault *Vault) load() {
 	vault.Contents = NewContents(vault)
 }
 
+func (vault *Vault) FindEncryptionKey() *EncryptionKey {
+	return vault.FindEncryptionKeyBySecurityLevel("SL5")
+}
+
 func (vault *Vault) FindEncryptionKeyBySecurityLevel(securityLevel string) *EncryptionKey {
 	for _, ekey := range vault.EncryptionKeys.List {
-		if ekey.Level == "SL5" {
+		if ekey.Level == securityLevel {
 			return ekey
 		}
 	}

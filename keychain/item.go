@@ -27,6 +27,12 @@ type ItemDetails struct {
 	TypeName      string `json:"typeName"`
 }
 
+type ItemEncryptedData struct {
+	Fields   []map[string]string `json:"fields,omitempty"`
+	URLs     []map[string]string `json:"URLs"`
+	Password string              `json:"password,omitempty"`
+}
+
 func NewItem(vault *Vault, values []interface{}) *Item {
 	item := &Item{Vault: vault}
 
@@ -55,6 +61,36 @@ func (item *Item) Details() *ItemDetails {
 	}
 
 	return itemDetails
+}
+
+func (item *Item) EncryptedData() *ItemEncryptedData {
+	encryptedData := &ItemEncryptedData{}
+	details := item.Details()
+
+	key := item.Vault.FindEncryptionKey()
+	jsonData := key.Decrypt(details.Encrypted)
+	err := json.Unmarshal(jsonData, &encryptedData)
+	if err != nil {
+		panic(err)
+	}
+
+	return encryptedData
+}
+
+func (item *Item) Password() string {
+	encryptedData := item.EncryptedData()
+
+	if len(encryptedData.Password) > 0 {
+		return encryptedData.Password
+	}
+
+	for _, field := range encryptedData.Fields {
+		if field["type"] == "P" {
+			return field["value"]
+		}
+	}
+
+	return ""
 }
 
 func (item *Item) detailsPath() string {

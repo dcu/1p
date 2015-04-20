@@ -60,7 +60,7 @@ func (encryptionKey *EncryptionKey) validateDecryptedKey() bool {
 	return false
 }
 
-func (encryptionKey *EncryptionKey) isUnlocked() bool {
+func (encryptionKey *EncryptionKey) IsUnlocked() bool {
 	if len(encryptionKey.decryptedKey) > 0 {
 		return true
 	}
