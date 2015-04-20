@@ -39,7 +39,8 @@ func (command *CopyCommand) Run(vault *keychain.Vault) {
 		return
 	}
 
-	fmt.Println(item.Password())
+	CopyToClipboard(item.Password())
+	fmt.Printf("%s password was copied to clipboard.\n", item.Name)
 }
 
 func askItemToUser(items []*keychain.Item) *keychain.Item {
