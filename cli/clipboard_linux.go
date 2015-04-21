@@ -1,4 +1,4 @@
-// +build darwin
+// +build linux
 
 package cli
 
@@ -8,7 +8,7 @@ import (
 )
 
 func CopyToClipboard(text string) {
-	command := exec.Command("xclip")
+	command := exec.Command("xclip", "-selection", "clipboard")
 	stdin, err := command.StdinPipe()
 	if err != nil {
 		panic(err)
