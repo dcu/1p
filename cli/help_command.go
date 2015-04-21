@@ -15,7 +15,13 @@ Copy command
     Usage: 1p copy <pattern>
     Aliases: c, cp
 
-    Copies the first match to the clipboard.
+    Copies the item password to the clipboard.
+
+Query command
+    Usage: 1p query <pattern>
+    Aliases: q
+
+    Queries the item information.
 `
 
 	fmt.Println(usage)
