@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dcu/1p/keychain"
 	"github.com/mgutz/ansi"
-	"strconv"
 )
 
 type CopyCommand struct {
@@ -42,19 +41,4 @@ func (command *CopyCommand) Run(vault *keychain.Vault) {
 
 	CopyToClipboard(item.Password())
 	fmt.Printf("%s password was copied to clipboard.\n", ansi.Color(item.Name, "green+h:black"))
-}
-
-func askItemToUser(items []*keychain.Item) *keychain.Item {
-	options := []string{}
-	for index, item := range items {
-		fmt.Printf(ansi.Color("%d) ", "yellow+h"), index+1)
-		fmt.Printf("%s (%s)\n", item.Name, item.Url)
-
-		options = append(options, strconv.Itoa(index+1))
-	}
-
-	answer := AskOption(options)
-	index, _ := strconv.Atoi(answer)
-
-	return items[index-1]
 }
