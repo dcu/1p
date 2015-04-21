@@ -18,6 +18,10 @@ func FindCommand(name string) Command {
 		{
 			return &CopyCommand{}
 		}
+	case "q", "query":
+		{
+			return &QueryCommand{}
+		}
 	}
 
 	return &HelpCommand{}

@@ -85,7 +85,7 @@ func (item *Item) Password() string {
 	}
 
 	for _, field := range encryptedData.Fields {
-		if field["type"] == "P" {
+		if field["type"] == "P" || field["designation"] == "password" {
 			return field["value"]
 		}
 	}
