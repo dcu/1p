@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dcu/1p/keychain"
 	"github.com/mgutz/ansi"
+	"strings"
 )
 
 type CopyCommand struct {
@@ -21,7 +22,7 @@ func (command *CopyCommand) Prepare(args []string) bool {
 }
 
 func (command *CopyCommand) Run(vault *keychain.Vault) {
-	items := vault.Contents.FindAllItemsByPattern(command.Args[0])
+	items := vault.Contents.FindAllItemsByPattern(strings.Join(command.Args, " "))
 	if len(items) == 0 {
 		fmt.Println("Item not found in the keychain.")
 		return
