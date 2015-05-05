@@ -7,6 +7,14 @@ import (
 	"strconv"
 )
 
+var (
+	Commands = map[string]Command{
+		"help":  &HelpCommand{},
+		"copy":  &CopyCommand{},
+		"query": &QueryCommand{},
+	}
+)
+
 type Command interface {
 	Run(vault *keychain.Vault)
 	Prepare(args []string) bool
@@ -14,17 +22,26 @@ type Command interface {
 
 func FindCommand(name string) Command {
 	switch name {
-	case "c", "cp", "copy":
+	case "c", "cp":
 		{
-			return &CopyCommand{}
+			name = "copy"
 		}
-	case "q", "query":
+	case "q":
 		{
-			return &QueryCommand{}
+			name = "query"
+		}
+	case "h":
+		{
+			name = "help"
 		}
 	}
 
-	return &HelpCommand{}
+	command := Commands[name]
+	if command == nil {
+		command = Commands["help"]
+	}
+
+	return command
 }
 
 func askItemToUser(items []*keychain.Item) *keychain.Item {
