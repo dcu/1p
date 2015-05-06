@@ -31,7 +31,10 @@ func FindDefaultVault() *keychain.Vault {
 }
 
 func FindAllVaultPaths() []string {
-	user, _ := user.Current()
+	user, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
 
 	pattern := filepath.Join(user.HomeDir, "Dropbox", "1Password", "*.agilekeychain")
 
