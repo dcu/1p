@@ -3,8 +3,10 @@ package cli
 import (
 	"fmt"
 	"github.com/dcu/1p/keychain"
+	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"strconv"
 )
 
@@ -31,12 +33,8 @@ func FindDefaultVault() *keychain.Vault {
 }
 
 func FindAllVaultPaths() []string {
-	user, err := user.Current()
-	if err != nil {
-		panic(err)
-	}
-
-	pattern := filepath.Join(user.HomeDir, "Dropbox", "1Password", "*.agilekeychain")
+	homeDir := findUserHome()
+	pattern := filepath.Join(homeDir, "Dropbox", "1Password", "*.agilekeychain")
 
 	matches, err := filepath.Glob(pattern)
 	if err != nil {
@@ -59,4 +57,27 @@ func FindVaultPath() string {
 	answerIndex, _ := strconv.Atoi(answer)
 
 	return candidates[answerIndex-1]
+}
+
+func findUserHome() string {
+	var homeDir string
+
+	user, err := user.Current()
+	if err == nil {
+		homeDir = user.HomeDir
+	}
+
+	if homeDir == "" {
+		homeDir = os.Getenv("HOME")
+	}
+
+	if homeDir == "" {
+		wd, _ := os.Getwd()
+		homeRx := regexp.MustCompile(`^/home/[^/]+`)
+
+		matches := homeRx.FindStringSubmatch(wd)
+		homeDir = matches[0]
+	}
+
+	return homeDir
 }
